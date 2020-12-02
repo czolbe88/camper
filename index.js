@@ -2,8 +2,9 @@ const Crawler = require("crawler");
 
 const LIST_OF_PS5_PREORDER_SITES = [
     //{ name: "Sony", url: 'https://store.sony.com.sg/products/playstation5/?variant=35981562249371', flaggedWord: "Out Of Stock", selector: '.product__add-to-cart.button.button--secondary' },
-    { name: "Courts", url: 'https://www.courts.com.sg/sony-cfi-1018b01-digital-edition-playstation-5-ip162582', flaggedWord: "Out Of Stock", selector: ".actions" },
-    { name: 'qisahn', url: 'https://qisahn.com/products/playstation-5-console-plus-dualsense-wireless-controller-1', selector: '#product_price_add_info', flaggedWord: "This item is sold out" },
+    { name: "Courts", url: 'https://www.courts.com.sg/sony-cfi-1018b01-digital-edition-playstation-5-ip162582', selector: ".actions", flaggedWord: "Out Of Stock" },
+    { name: "qisahn", url: 'https://qisahn.com/products/playstation-5-console-plus-dualsense-wireless-controller-1', selector: '#product_price_add_info', flaggedWord: "This item is sold out" },
+    { name: "amazon", url: "https://www.amazon.sg/gp/product/B08HNRSVQP/", selector: "#availability", flaggedWord: "Currently unavailable." },
 ];
 
 var c = new Crawler({
