@@ -1,0 +1,14 @@
+{
+  "name": "camper",
+  "version": "1.0.0",
+  "description": "Be notified of page updates",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "crawler": "^1.3.0"
+  }
+}
