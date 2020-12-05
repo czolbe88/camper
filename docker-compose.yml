@@ -1,0 +1,39 @@
+version: '3'
+services:
+  flyway:
+    image: flyway/flyway
+    command: -url=jdbc:mysql://userdb -schemas=userdb -user=root -password=P@ssw0rd -connectRetries=60 migrate
+    volumes:
+      - ./flyway_scripts:/flyway/sql
+    networks: 
+      - czolbe
+    depends_on:
+      - userdb
+  userdb:
+    image: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=P@ssw0rd
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    ports:
+      - 3307:3306
+    networks: 
+      - czolbe
+    volumes: 
+      - db-data:/var/lib/mysql/data
+  camper:
+    build:
+      context: .
+    image: czolbe/camper:${CAMPER_IMG_TAG:-latest}
+    depends_on: 
+      - flyway
+    env_file:
+      - ./profiles/${ENV:-prd.env}
+    networks: 
+      - czolbe
+
+volumes:
+  db-data:
+    
+networks: 
+  czolbe:
+  
