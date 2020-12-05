@@ -1,5 +1,7 @@
 const Crawler = require("crawler");
 
+const Mail = require('./mail');
+
 const LIST_OF_PS5_PREORDER_SITES = [
     //{ name: "Sony", url: 'https://store.sony.com.sg/products/playstation5/?variant=35981562249371', flaggedWord: "Out Of Stock", selector: '.product__add-to-cart.button.button--secondary' },
     { name: "Courts", url: 'https://www.courts.com.sg/sony-cfi-1018b01-digital-edition-playstation-5-ip162582', selector: ".actions", flaggedWord: "Out Of Stock" },
@@ -27,10 +29,11 @@ var c = new Crawler({
                 const selected = $(site.selector);
                 if (selected.text().trim().toUpperCase().includes(site.flaggedWord.toUpperCase())) {
                     console.log("PS5 is still SOLD OUT on " + site.name);
+                    Mail.sendEmail(site.name);
+                    
                 } else {
                     console.log("PS5 is AVAILABLE on " + site.name);
                 }
-
             }
             console.log("\n");
         }
