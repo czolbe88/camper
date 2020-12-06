@@ -2,10 +2,7 @@ const nodemailer = require('nodemailer');
 
 require('dotenv').config();
 
-
-let jsonData = require('./mailinglist.json');
-
-exports.sendEmail = function sendEmail(storeName) {
+exports.sendEmail = function sendEmail(storeName, mailingList) {
     // create reusable transporter object using the default SMTP transport
     let transporter = nodemailer.createTransport({
         host: "smtp.gmail.com",
@@ -20,7 +17,7 @@ exports.sendEmail = function sendEmail(storeName) {
     // send mail with defined transport object
     transporter.sendMail({
         from: '"Camper 👻" <ps5@camper.com>', // sender address
-        to: jsonData.emailAddresses, // list of receivers
+        to: mailingList, // list of receivers
         subject: "Hello ✔", // Subject line
         text: "Hi, perhaps you are interested to know that ps5 is now available at " + storeName, // plain text body
         html: "Hi, perhaps you are interested to know that ps5 is now available at " + storeName // html body

@@ -1,6 +1,6 @@
 const Crawler = require("crawler");
-
 const Mail = require('./mail');
+const MysqlClient = require('./dbclient');
 
 const LIST_OF_PS5_PREORDER_SITES = [
     //{ name: "Sony", url: 'https://store.sony.com.sg/products/playstation5/?variant=35981562249371', flaggedWord: "Out Of Stock", selector: '.product__add-to-cart.button.button--secondary' },
@@ -9,42 +9,72 @@ const LIST_OF_PS5_PREORDER_SITES = [
     { name: "amazon", url: "https://www.amazon.sg/gp/product/B08HNRSVQP/", selector: "#availability", flaggedWord: "Currently unavailable." },
 ];
 
-var c = new Crawler({
-    maxConnections: 10,
-    // rateLimit: 10000,
-    callback: (error, res, done) => {
-        if (error) {
-            console.log(error);
-        } else {
-            var $ = res.$;
-            var site = res.options.site;
 
-            //selector can be either a class or an id
+main();
 
-            console.log("Searching>>>>>> " + site.name);
+function getMailingList() {
+    const connection = MysqlClient.connection;
+    connection.connect();
+    var mailingList = [];
 
-            if ($(site.selector).length == 0) {
-                console.log("site might have changed");
-            } else {
-                const selected = $(site.selector);
-                if (selected.text().trim().toUpperCase().includes(site.flaggedWord.toUpperCase())) {
-                    console.log("PS5 is still SOLD OUT on " + site.name);
-                    Mail.sendEmail(site.name);
-                    
-                } else {
-                    console.log("PS5 is AVAILABLE on " + site.name);
-                }
+    return new Promise((resolve, reject) => {
+        connection.query('SELECT * from user', function (error, results, fields) {
+            if (error){
+                reject(err);
+                return;
             }
-            console.log("\n");
-        }
-        done();
-    }
-});
+            mailingList = results.map(result => {
+                return result.email_address;
+            });
+            connection.end();
+            resolve(mailingList);
+        });
 
-
-LIST_OF_PS5_PREORDER_SITES.forEach(site => {
-    c.queue({
-        url: site.url,
-        site
     });
-});
+}
+
+
+async function main() {
+    let mailingList = await getMailingList();
+    console.log('mailingList is ', mailingList);
+
+    var c = new Crawler({
+        maxConnections: 10,
+        // rateLimit: 10000,
+        callback: (error, res, done) => {
+            if (error) {
+                console.log(error);
+            } else {
+                var $ = res.$;
+                var site = res.options.site;
+
+                //selector can be either a class or an id
+                console.log("Searching>>>>>> " + site.name);
+
+                if ($(site.selector).length == 0) {
+                    console.log("site might have changed");
+                } else {
+                    const selected = $(site.selector);
+                    if (selected.text().trim().toUpperCase().includes(site.flaggedWord.toUpperCase())) {
+                        console.log("PS5 is still SOLD OUT on " + site.name);
+                        mailingList.forEach(addr=>{
+                            Mail.sendEmail(site.name, addr);
+                        })
+                    } else {
+                        console.log("PS5 is AVAILABLE on " + site.name);
+                    }
+                }
+                console.log("\n");
+            }
+            done();
+        }
+    });
+
+
+    LIST_OF_PS5_PREORDER_SITES.forEach(site => {
+        c.queue({
+            url: site.url,
+            site
+        });
+    });
+}
