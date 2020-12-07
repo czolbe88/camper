@@ -1,4 +1,8 @@
 FROM node:12
+
+
+RUN apt-get update && apt-get install -y dos2unix
+
 #app directory
 WORKDIR /usr/src/app
 
@@ -7,9 +11,12 @@ COPY package*.json ./
 
 RUN npm install
 
-#RUN npm ci --only=production 
-
 COPY . .
 
-CMD ["node", "index.js"]
+#convert line endings for windows to unix
+RUN dos2unix run_app.sh
+
+# CMD ["node", "index.js"]
+
+CMD [ "sh", "run_app.sh" ]
 

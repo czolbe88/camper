@@ -20,7 +20,7 @@ function getMailingList() {
     return new Promise((resolve, reject) => {
         connection.query('SELECT * from user', function (error, results, fields) {
             if (error){
-                reject(err);
+                reject(error);
                 return;
             }
             mailingList = results.map(result => {
