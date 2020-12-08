@@ -18,8 +18,9 @@ services:
       - 3307:3306
     networks: 
       - czolbe
-    volumes: 
-      - db-data:/var/lib/mysql/data
+    #bug with mysqld creating db in volume 
+    # volumes: 
+    #   - db-data:/var/lib/mysql/data
   camper:
     build:
       context: .

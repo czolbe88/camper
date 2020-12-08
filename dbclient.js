@@ -6,6 +6,7 @@ var connection = mysql.createConnection({
   port: process.env.USER_DB_PORT,
   password: process.env.USER_DB_PASSWORD,
   database: 'userdb',
+  insecureAuth: true
 });
 
 exports.connection = connection;
