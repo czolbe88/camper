@@ -1,6 +1,6 @@
 const Crawler = require("crawler");
-const Mail = require('./mail');
 const MysqlClient = require('./dbclient');
+const { sendEmail } = require("./mailClient");
 
 const LIST_OF_PS5_PREORDER_SITES = [
     //{ name: "Sony", url: 'https://store.sony.com.sg/products/playstation5/?variant=35981562249371', flaggedWord: "Out Of Stock", selector: '.product__add-to-cart.button.button--secondary' },
@@ -12,30 +12,53 @@ const LIST_OF_PS5_PREORDER_SITES = [
 
 main();
 
-function getMailingList() {
-    const connection = MysqlClient.connection;
-    connection.connect();
+function getUsers(connection) {
     var mailingList = [];
 
     return new Promise((resolve, reject) => {
-        connection.query('SELECT * from user', function (error, results, fields) {
-            if (error){
+        connection.query('SELECT * from user', async function (error, results, fields) {
+            if (error) {
+                console.log(error);
                 reject(error);
                 return;
             }
-            mailingList = results.map(result => {
-                return result.email_address;
-            });
-            connection.end();
-            resolve(mailingList);
+            resolve(results);
         });
 
     });
 }
 
+function updateNewUserFlag(connection, id) {
+    return new Promise((resolve, reject) => {
+        connection.query(`UPDATE user SET isNewUser=0 where id=${id}`, (error, results, fields) => {
+            if (error) {
+                console.log(error);
+                reject(error);
+                return;
+            }
+            resolve(true);
+        })
+    })
+}
 
 async function main() {
-    let mailingList = await getMailingList();
+
+    const connection = MysqlClient.connection;
+    connection.connect();
+    let users = await getUsers(connection);
+
+    let mailingList =  users.map( async user=>{
+        if(user.isNewUser){
+            let emailSent = await sendEmail(user.email_address, `Hi ${user.full_name}, you have been subscribed to PS5 Camper`);
+            if (emailSent) {
+                console.log(`new user: ${user.full_name}`);
+                await updateNewUserFlag(connection, user.id);
+            }
+        }
+        return user.email_address;
+    })
+
+    await Promise.all(mailingList);
     console.log('mailingList is ', mailingList);
 
     var c = new Crawler({
@@ -57,10 +80,10 @@ async function main() {
                     const selected = $(site.selector);
                     if (selected.text().trim().toUpperCase().includes(site.flaggedWord.toUpperCase())) {
                         console.log("PS5 is still SOLD OUT on " + site.name);
-                        mailingList.forEach(addr=>{
-                            Mail.sendEmail(site.name, addr);
-                        })
                     } else {
+                        mailingList.forEach(addr => {
+                            Mail.sendEmail(site.name, addr, `PS5 is AVAILABLE on ${site.name}`);
+                        })
                         console.log("PS5 is AVAILABLE on " + site.name);
                     }
                 }
@@ -70,11 +93,12 @@ async function main() {
         }
     });
 
-
     LIST_OF_PS5_PREORDER_SITES.forEach(site => {
         c.queue({
             url: site.url,
             site
         });
     });
+    connection.end();
+
 }

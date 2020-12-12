@@ -4,8 +4,9 @@ CREATE TABLE `user` (
   `id` int(11) NOT NULL,
   `full_name` varchar(100) NOT NULL,
   `contact_number` varchar(8) DEFAULT NULL,
-  `email_address` varchar(200) DEFAULT NULL,
-  `address` varchar(200) DEFAULT NULL
+  `email_address` varchar(200) NOT NULL,
+  `address` varchar(200) DEFAULT NULL,
+  `isNewUser` tinyint(4) NOT NULL DEFAULT '1'
 ); 
 
 
