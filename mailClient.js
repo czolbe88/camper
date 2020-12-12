@@ -11,6 +11,7 @@ exports.sendEmail = function sendEmail(mailingList, message) {
         tls: {
             ciphers: 'SSLv3'
         },
+        requireTLS: true,
         auth: {
             user: process.env.EMAIL_USERNAME, // generated ethereal user
             pass: process.env.EMAIL_PASSWORD, // generated ethereal password
