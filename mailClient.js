@@ -8,6 +8,9 @@ exports.sendEmail = function sendEmail(mailingList, message) {
         host: "smtp.gmail.com",
         port: 587,
         secure: false, // true for 465, false for other ports
+        tls: {
+            ciphers: 'SSLv3'
+        },
         auth: {
             user: process.env.EMAIL_USERNAME, // generated ethereal user
             pass: process.env.EMAIL_PASSWORD, // generated ethereal password
