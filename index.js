@@ -4,7 +4,7 @@ const { sendEmail } = require("./mailClient");
 
 const LIST_OF_PS5_PREORDER_SITES = [
     //{ name: "Sony", url: 'https://store.sony.com.sg/products/playstation5/?variant=35981562249371', flaggedWord: "Out Of Stock", selector: '.product__add-to-cart.button.button--secondary' },
-    { name: "Courts", url: 'https://www.courts.com.sg/sony-cfi-1018b01-digital-edition-playstation-5-ip162582', selector: ".actions", flaggedWord: "Out Of Stock" },
+    //{ name: "Courts", url: 'https://www.courts.com.sg/sony-cfi-1018b01-digital-edition-playstation-5-ip162582', selector: ".actions", flaggedWord: "Out Of Stock" },
     { name: "qisahn", url: 'https://qisahn.com/products/playstation-5-console-plus-dualsense-wireless-controller-1', selector: '#product_price_add_info', flaggedWord: "This item is sold out" },
     { name: "amazon", url: "https://www.amazon.sg/gp/product/B08HNRSVQP/", selector: "#availability", flaggedWord: "Currently unavailable." },
 ];
@@ -47,19 +47,19 @@ async function main() {
     connection.connect();
     let users = await getUsers(connection);
 
-    let mailingList =  users.map( async user=>{
-        if(user.isNewUser){
+    let mailingList = users.map(async user => {
+        if (user.isNewUser) {
             let emailSent = await sendEmail(user.email_address, `Hi ${user.full_name}, you have been subscribed to PS5 Camper`);
             if (emailSent) {
                 console.log(`new user: ${user.full_name}`);
-                await updateNewUserFlag(connection, user.id);
+                updateNewUserFlag(connection, user.id);
             }
         }
         return user.email_address;
     })
 
-    await Promise.all(mailingList);
-    console.log('mailingList is ', mailingList);
+    listofMailPromises = await Promise.all(mailingList);
+    console.log('mailingList is ', listofMailPromises);
 
     var c = new Crawler({
         maxConnections: 10,
@@ -81,8 +81,8 @@ async function main() {
                     if (selected.text().trim().toUpperCase().includes(site.flaggedWord.toUpperCase())) {
                         console.log("PS5 is still SOLD OUT on " + site.name);
                     } else {
-                        mailingList.forEach(addr => {
-                            Mail.sendEmail(site.name, addr, `PS5 is AVAILABLE on ${site.name}`);
+                        listofMailPromises.forEach(addr => {
+                            sendEmail(addr, `PS5 is AVAILABLE on ${site.name}`);
                         })
                         console.log("PS5 is AVAILABLE on " + site.name);
                     }
